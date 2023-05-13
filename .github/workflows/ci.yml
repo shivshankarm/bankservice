@@ -19,7 +19,7 @@ jobs:
       postgres:
         image: postgres:15.3
         env:
-          POSTGRES_USER: root
+          POSTGRES_USER: staff
           POSTGRES_PASSWORD: secret
           POSTGRES_DB: simple_bank
         ports:
