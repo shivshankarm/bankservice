@@ -12,13 +12,13 @@ import (
 const addAccountBalance = `-- name: AddAccountBalance :one
 UPDATE accounts
 SET balance = balance + $1
-where id = + $2
+where id = $2
 Returning id, owner, balance, currency, created_at
 `
 
 type AddAccountBalanceParams struct {
-	Amount int64       `json:"amount"`
-	ID     interface{} `json:"id"`
+	Amount int64 `json:"amount"`
+	ID     int64 `json:"id"`
 }
 
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Accounts, error) {
@@ -243,7 +243,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Accounts
+	items := []Accounts{}
 	for rows.Next() {
 		var i Accounts
 		if err := rows.Scan(
@@ -284,7 +284,7 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Entries
+	items := []Entries{}
 	for rows.Next() {
 		var i Entries
 		if err := rows.Scan(
@@ -324,7 +324,7 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transfers
+	items := []Transfers{}
 	for rows.Next() {
 		var i Transfers
 		if err := rows.Scan(
