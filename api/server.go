@@ -2,6 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	db "github.com/shivshankarm/bankservice/db/sqlc"
 )
 
@@ -14,35 +16,24 @@ func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts/", server.listAccount)
 	router.POST("/accounts/", server.updateAccount)
 	router.DELETE("/accounts/:id", server.deleteAccount)
 
+	router.POST("/transfers", server.createTransfer)
+	// router.GET("/transfers/:id", server.getTransfer)
+	// router.GET("/transfers/", server.listTransfer)
+	// router.POST("/transfers/", server.updateTransfer)
+	// router.DELETE("/transfers/:id", server.deleteTransfer)
+
 	server.router = router
 	return server
-}
-
-type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
-}
-
-type updateAccountRequest struct {
-	ID      int64 `json:"id" binding:"required,min=1"`
-	Balance int64 `json:"balance" binding:"required"`
-}
-
-type getAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-type deleteAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-type listAccountRequest struct {
-	PageId   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
 func (server *Server) Start(address string) error {
