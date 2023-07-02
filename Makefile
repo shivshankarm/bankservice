@@ -1,5 +1,8 @@
+network:
+	docker network create bank-network
+
 postgres:
-	docker run --name postgreslatest -p 5432:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=staff -d postgres:latest    
+	docker run --name postgreslatest --network bank-network -p 5432:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=staff -d postgres:latest
 
 postgresstop:
 	docker stop postgreslatest
@@ -37,5 +40,11 @@ server:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/shivshankarm/bankservice/db/sqlc Store	
 
-.PHONY: createdb dropdb postgres postgresstop postgresrm migrateup migratedown sqlc server migrateup1 migratedown1 mock
+docker:
+	docker ps -a;docker images; docker rm bankservice; docker rmi bankservice;docker build -t bankservice:latest .; 
+
+rundocker:
+	docker rm bankservice; docker run --name bankservice --network bank-network  -e GIN_MODE=release -e DB_SOURCE="postgresql://staff:secret@postgreslatest:5432/simplebank?sslmode=disable" -p 8080:8080 bankservice:latest ;
+
+.PHONY: network postgres postgresstop createdb dropdb postgresrm migrateup migratedown sqlc server migrateup1 migratedown1 mock docker rundocker
 
